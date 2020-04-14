@@ -1,7 +1,11 @@
 package com.orangebank.delivery.preparator.controller;
 
-import com.orangebank.delivery.preparator.dtos.PackageRequestDto;
+import javax.validation.Valid;
+
 import org.springframework.http.ResponseEntity;
+
+import com.orangebank.delivery.preparator.dtos.NotificationDto;
+import com.orangebank.delivery.preparator.dtos.PackageRequestDto;
 
 /**
  * Controlador de preparación de pedidos. Se encarga de registrar los pedidos de
@@ -11,5 +15,5 @@ import org.springframework.http.ResponseEntity;
  *
  */
 public interface IDeliveryPreparatorController {
-	public ResponseEntity<Void> prepareDelivery(PackageRequestDto packageRequestDto);
+	public ResponseEntity<NotificationDto> prepareDelivery(@Valid PackageRequestDto packageRequestDto);
 }
