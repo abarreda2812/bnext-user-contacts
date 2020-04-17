@@ -19,7 +19,7 @@ public class PackageRequestDtoJSONMapperImpl implements IPackageRequestDtoJSONMa
 		String result = null;
 		ObjectMapper mapper = new ObjectMapper();
 		try {
-			result = mapper.writeValueAsString(dto);
+			result = dto!=null ? mapper.writeValueAsString(dto) : null;
 		} catch (IOException e) {
 			log.error("Eror al convertir a JSON el objeto:"+dto, e);
 		}

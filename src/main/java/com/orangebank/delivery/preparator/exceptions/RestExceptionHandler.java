@@ -13,7 +13,7 @@ import com.orangebank.delivery.preparator.dtos.NotificationDto;
  *
  */
 @RestControllerAdvice
-public class RestExceptionHandler {
+public class RestExceptionHandler{
 
 	@ExceptionHandler(DeliveryPreparatorException.class)
 	public ResponseEntity<NotificationDto> handleExpirationRefeshNotFound(DeliveryPreparatorException ex) {
