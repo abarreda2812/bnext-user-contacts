@@ -1,80 +1,71 @@
 package com.orangebank.delivery.preparator.controller;
 
-import org.junit.jupiter.api.Assertions;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.servlet.MockMvc;
 
 import com.orangebank.delivery.preparator.controller.impl.DeliveryPreparatorController;
-import com.orangebank.delivery.preparator.dtos.NotificationDto;
-import com.orangebank.delivery.preparator.fakes.CpRepositoryFakeExistByIdFalse;
-import com.orangebank.delivery.preparator.fakes.CpRepositoryFakeExistByIdTrue;
+import com.orangebank.delivery.preparator.mapper.impl.PackageRequestDtoJSONMapperImpl;
 import com.orangebank.delivery.preparator.mocks.PackageRequestDtoGenerator;
-import com.orangebank.delivery.preparator.repository.CpRepository;
 import com.orangebank.delivery.preparator.service.ISenderDeliveryProcessor;
 import com.orangebank.delivery.preparator.validator.PackageRequestDtoValidator;
 
-@ExtendWith(MockitoExtension.class)
+@WebMvcTest(DeliveryPreparatorController.class)
+@ExtendWith(SpringExtension.class)
+@ActiveProfiles("dev")
 class DeliverPreparatorControllerTests {
 
-	@Spy
-	private CpRepository cpRepository;
-	@Spy
-	private PackageRequestDtoValidator packageRequestDtoValidator = new PackageRequestDtoValidator(cpRepository);
-	@Mock
+	@Autowired
+	private MockMvc mockMvc;
+	@MockBean
 	private ISenderDeliveryProcessor senderDeliveryProcessor;
-	@InjectMocks
-	private DeliveryPreparatorController deliveryPreparatorController;
+	@MockBean
+	private PackageRequestDtoValidator validator;
+	private PackageRequestDtoJSONMapperImpl jsonMapper = new PackageRequestDtoJSONMapperImpl();
+
 
 	@Test
-	void prepareDelivery_SuccessfullTest() {
-		cpRepository = new CpRepositoryFakeExistByIdTrue();
-		packageRequestDtoValidator = new PackageRequestDtoValidator(cpRepository);
-		deliveryPreparatorController = new DeliveryPreparatorController(
-				senderDeliveryProcessor, packageRequestDtoValidator);
-		ResponseEntity<NotificationDto> actual = deliveryPreparatorController
-				.prepareDelivery(PackageRequestDtoGenerator.generatePackageRequestDto());
-		Assertions.assertEquals(HttpStatus.CREATED, actual.getStatusCode());
+	void prepareDelivery_SuccessfullTest() throws Exception {
+		 this.mockMvc.perform(post("/")
+	                .contentType(MediaType.APPLICATION_JSON)
+	                .content(jsonMapper.fromDtoToJSON(PackageRequestDtoGenerator.generatePackageRequestDto())))
+	                .andExpect(status().isCreated());
 	}
 
 	@Test
-	void prepareDelivery_BadRequestErrorTest() {
-		cpRepository = new CpRepositoryFakeExistByIdTrue();
-		packageRequestDtoValidator = new PackageRequestDtoValidator(cpRepository);
-		deliveryPreparatorController = new DeliveryPreparatorController(
-				senderDeliveryProcessor, packageRequestDtoValidator);
-		ResponseEntity<NotificationDto> actual = deliveryPreparatorController
-				.prepareDelivery(PackageRequestDtoGenerator.generateBadPackageRequestDto());
-		Assertions.assertEquals(HttpStatus.BAD_REQUEST, actual.getStatusCode());
+	void prepareDelivery_BadRequestErrorTest() throws Exception {
+		this.mockMvc.perform(post("/")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonMapper.fromDtoToJSON(PackageRequestDtoGenerator.generateBadPackageRequestDto())))
+                .andExpect(status().isBadRequest());
 	}
 
 	@Test
-	void prepareDelivery_BadRequestError_DateNotValidTest() {
+	void prepareDelivery_BadRequestError_DateNotValidTest() throws Exception {
 		// Bad date, out of time
-		cpRepository = new CpRepositoryFakeExistByIdTrue();
-		packageRequestDtoValidator = new PackageRequestDtoValidator(cpRepository);
-		deliveryPreparatorController = new DeliveryPreparatorController(
-				senderDeliveryProcessor, packageRequestDtoValidator);
-		ResponseEntity<NotificationDto> actual = deliveryPreparatorController
-				.prepareDelivery(PackageRequestDtoGenerator.generateBadPackageRequestDtoWithDateNotValid());
-		Assertions.assertEquals(HttpStatus.BAD_REQUEST, actual.getStatusCode());
+		this.mockMvc.perform(post("/")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonMapper.fromDtoToJSON(PackageRequestDtoGenerator.generateBadPackageRequestDtoWithDateNotValid())))
+                .andExpect(status().isBadRequest());
 	}
 
 	@Test
-	void prepareDelivery_BadRequestErrorTest_CpNotValidInSystem() {
+	void prepareDelivery_BadRequestErrorTest_CpNotValidInSystem() throws Exception {
 		// CP out of list
-		cpRepository = new CpRepositoryFakeExistByIdFalse();
-		packageRequestDtoValidator = new PackageRequestDtoValidator(cpRepository);
-		deliveryPreparatorController = new DeliveryPreparatorController(
-				senderDeliveryProcessor, packageRequestDtoValidator);
-		ResponseEntity<NotificationDto> actual = deliveryPreparatorController
-				.prepareDelivery(PackageRequestDtoGenerator.generateBadPackageRequestDtoWithCpNotValidInSystem());
-		Assertions.assertEquals(HttpStatus.BAD_REQUEST, actual.getStatusCode());
+		this.mockMvc.perform(post("/")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonMapper.fromDtoToJSON(PackageRequestDtoGenerator.generateBadPackageRequestDtoWithCpNotValidInSystem())))
+                .andExpect(status().isBadRequest());
 	}
 
 }
