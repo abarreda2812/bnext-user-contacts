@@ -1,12 +1,19 @@
-package com.orangebank.delivery.preparator.service;
+package com.bnext.user.contacts.service;
 
-import com.orangebank.delivery.preparator.dtos.PackageRequestDto;
+import com.bnext.user.contacts.dtos.UserDto;
+
+import reactor.core.publisher.Mono;
 /**
- * Interfaz de envío de pedidos al procesador de pedidos.
+ * Service for users operations.
  * @author abarreda
  *
  */
-public interface ISenderDeliveryProcessor {
-
-	public void sendDeliveryForProcessor(PackageRequestDto packageRequestDto);
+public interface IUserService {
+	/**
+	 * Creates an user.
+	 * @param userDto user to create.
+	 * @return user created.
+	 */
+	public Mono<UserDto> createUser(UserDto userDto);
+	
 }
