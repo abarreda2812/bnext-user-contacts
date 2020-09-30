@@ -1,32 +1,31 @@
-package com.orangebank.delivery.preparator.controller.impl;
+package com.bnext.user.contacts.controller.impl;
 
-import java.util.stream.Collectors;
+import java.util.List;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BeanPropertyBindingResult;
-import org.springframework.validation.Errors;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.orangebank.delivery.preparator.controller.IDeliveryPreparatorController;
-import com.orangebank.delivery.preparator.dtos.NotificationDto;
-import com.orangebank.delivery.preparator.dtos.PackageRequestDto;
-import com.orangebank.delivery.preparator.service.ISenderDeliveryProcessor;
-import com.orangebank.delivery.preparator.validator.PackageRequestDtoValidator;
+import com.bnext.user.contacts.controller.IUserContactsController;
+import com.bnext.user.contacts.dtos.UserContactCreationDto;
+import com.bnext.user.contacts.dtos.UserContactDto;
+import com.bnext.user.contacts.dtos.UserDto;
+import com.bnext.user.contacts.service.IUserContactService;
+import com.bnext.user.contacts.service.IUserService;
 
-import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Mono;
 
 /**
- * Implementación del controlador de preparación de pedidos. Se encarga de
- * registrar los pedidos de uno en uno y posteriormente los envía para su
- * procesado.
+ * API controller for create Users and Contacts implementation.
  * 
  * @author abarreda
  *
@@ -34,36 +33,49 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @Validated
 @Slf4j
-public class DeliveryPreparatorController implements IDeliveryPreparatorController {
+public class UserContactsController implements IUserContactsController {
 
-	private ISenderDeliveryProcessor senderDeliveryProcessor;
-	private PackageRequestDtoValidator validator;
+	/**
+	 * User service.
+	 */
+	private IUserService userService;
+	/**
+	 * User contact service.
+	 */
+	private IUserContactService userContactService;
 
 	@Autowired
-	public DeliveryPreparatorController(ISenderDeliveryProcessor senderDeliveryProcessor,
-			PackageRequestDtoValidator validator) {
-		this.senderDeliveryProcessor = senderDeliveryProcessor;
-		this.validator = validator;
+	public UserContactsController(IUserService userService, IUserContactService userContactService) {
+		this.userService = userService;
+		this.userContactService = userContactService;
 	}
-	@Override
-	@PostMapping()
-	public ResponseEntity<NotificationDto> prepareDelivery(
-			@ApiParam(value = "Objeto de petición de envíos.", required = true) @Valid @RequestBody PackageRequestDto packageRequestDto) {
-		log.info("@prepareDelivery  entrando en preparación de pedido.");
-		Errors errors = new BeanPropertyBindingResult(packageRequestDto, "packageRequestDto");
-		validator.validate(packageRequestDto, errors);
-		if (errors.hasFieldErrors()) {
-			NotificationDto notification = NotificationDto.builder().status(HttpStatus.BAD_REQUEST.toString())
-					.message("Se han producido errores de validación en el objeto")
-					.errorCode(errors.getAllErrors().stream().map(e -> e.getCode()).collect(Collectors.joining(";")))
-					.build();
 
-			return new ResponseEntity<>(notification, HttpStatus.BAD_REQUEST);
-		}
-		senderDeliveryProcessor.sendDeliveryForProcessor(packageRequestDto);
-		log.info("@prepareDelivery  pedido procesado.");
-		return new ResponseEntity<>(NotificationDto.builder().status(HttpStatus.CREATED.toString())
-				.message("El paquete ha sido procesado para su posterior envío").build(), HttpStatus.CREATED);
+	@Override
+	@PutMapping("/createUser")
+	public ResponseEntity<Mono<UserDto>> createUser(@Valid UserDto userDto) {
+		log.info("@createUser creando usuario.");
+		return new ResponseEntity<>(userService.createUser(userDto), HttpStatus.OK);
+	}
+
+	@Override
+	@PutMapping("/createContacts")
+	public ResponseEntity<Mono<List<UserContactDto>>> createContacts(@Valid @RequestBody List<UserContactCreationDto> userContacts) {
+		log.info("@createContacts creando contactos de usuario.");
+		return new ResponseEntity<>(userContactService.createContacts(userContacts), HttpStatus.OK);
+	}
+
+	@Override
+	@PostMapping("/getCommonContacts")
+	public ResponseEntity<Mono<List<UserContactDto>>> getCommonContacts(@NotNull String userId1, @NotNull String userId2) {
+		log.info("@getCommonContacts obteniendo contactos comunes de usuarios.");
+		return new ResponseEntity<>(userContactService.getCommonContacts(userId1, userId2), HttpStatus.OK);
+	}
+
+	@Override
+	@PostMapping("/getUserContacts")
+	public ResponseEntity<Mono<List<UserContactDto>>> getUserContacts(@NotNull String userPhone) {
+		log.info("@getUserContacts obteniendo contactos de usuario.");
+		return new ResponseEntity<>(userContactService.getUserContacts(userPhone), HttpStatus.OK);
 	}
 
 }

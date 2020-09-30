@@ -1,0 +1,15 @@
+version: '3.1'
+services: 
+ 
+  PostgreSQL:
+    image: sameersbn/postgresql:10-2
+    ports:
+      - "5432:5432"
+    environment:
+      DEBUG: 'false'
+      DB_USER: bnext
+      DB_PASS: bank
+      DB_NAME: bnext
+    volumes:
+      - /srv/docker/postgresql:/var/lib/postgresql
+      

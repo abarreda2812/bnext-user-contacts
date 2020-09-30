@@ -1,0 +1,24 @@
+version: '3.1'
+services: 
+ 
+  PostgreSQL:
+    image: sameersbn/postgresql:10-2
+    ports:
+      - "5432:5432"
+    environment:
+      DEBUG: 'false'
+      DB_USER: bnext
+      DB_PASS: bank
+      DB_NAME: bnext
+    volumes:
+      - /srv/docker/postgresql:/var/lib/postgresql
+  
+  bnext-user-contacts:
+    image: surevine/bnext-user-contacts
+    environment:
+      SPRING_PROFILES_ACTIVE: pro
+      SPRING_DATASOURCE_URL_BNEXT: jdbc:postgresql://PostgreSQL:5432/bnext
+    ports:
+      - "8081:8081"
+    depends_on:
+      - PostgreSQL
