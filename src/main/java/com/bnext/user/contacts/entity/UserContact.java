@@ -56,7 +56,7 @@ public class UserContact {
 	/**
 	 * User foreign key.
 	 */
-	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@ManyToMany(cascade = {CascadeType.MERGE,CascadeType.REFRESH}, fetch = FetchType.LAZY)
 	@JoinTable(
 			  name = "BNEXT_USER_USER_CONTACT", 
 			  joinColumns = @JoinColumn(name = "user_contact_id"), 

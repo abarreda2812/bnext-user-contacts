@@ -39,14 +39,15 @@ public class UserContactService implements IUserContactService {
 	 * User contact repository.
 	 */
 	private UserContactRepository userContactRepository;
-	
+
 	/**
 	 * Mapper of creation object.
 	 */
 	private IUserContactCreationMapper userContactCreationMapper;
 
 	@Autowired
-	public UserContactService(final UserContactRepository userContactRepository, final IUserContactCreationMapper userContactCreationMapper) {
+	public UserContactService(final UserContactRepository userContactRepository,
+			final IUserContactCreationMapper userContactCreationMapper) {
 		this.userContactRepository = userContactRepository;
 		this.userContactCreationMapper = userContactCreationMapper;
 	}
@@ -94,13 +95,13 @@ public class UserContactService implements IUserContactService {
 
 	/**
 	 * Checks the search result for return exception Not Found if result is empty.
+	 * 
 	 * @param contacts search result.
 	 * @return search result or exception NOT_FOUND.
 	 */
 	private Mono<List<UserContactDto>> checkSearchResult(List<UserContact> contacts) {
 		if (contacts.isEmpty()) {
-			return Mono
-					.error(new UserContactsException(HttpStatus.NOT_FOUND, "No se encontraron resultados"));
+			return Mono.error(new UserContactsException(HttpStatus.NOT_FOUND, "No se encontraron resultados"));
 		} else {
 			return Mono.just(USER_CONTACT_MAPPER.toDto(contacts));
 		}
