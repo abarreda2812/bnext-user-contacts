@@ -5,6 +5,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -41,6 +43,7 @@ public class UserContactCreationMapper implements IUserContactCreationMapper {
 	 * @return Entity object.
 	 */
 	@Override
+	@Transactional
 	public UserContact toEntity(final UserContactCreationDto userDto) throws UserContactsException {
 		if (userDto == null) {
 			return null;
@@ -53,6 +56,7 @@ public class UserContactCreationMapper implements IUserContactCreationMapper {
 		if (Objects.nonNull(userDto.getUserKey()) && !userDto.getUserKey().isEmpty()) {
 			User user = userRepository.findFirstByPhone(userDto.getUserKey());
 			if (Objects.nonNull(user)) {
+				user.getUserContacts().add(userContact);
 				userContact.setUsers(Stream.of(user).collect(Collectors.toList()));
 			} else {
 				throw new UserContactsException(HttpStatus.NOT_FOUND, "No se ha encontrado usuario en el sistema.");
